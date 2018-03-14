@@ -1,7 +1,7 @@
-brew update
-brew install tesseract
-brew install ghostscript
-brew install parallel
+brew update. 
+brew install tesseract  
+brew install ghostscript. 
+brew install parallel. 
 
 CREATE TABLE areas (
     area_id serial not null,
