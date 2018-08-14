@@ -1,6 +1,5 @@
 # ocr-classify
 
-<<<<<<< HEAD
 A machine learning approach to table and figure extraction
 
 ## Installation
@@ -17,16 +16,6 @@ psql ocr-classify < schema.sql
 ````
 
 ## Info
-summarize.py - calculates doc stats for an article and inserts them into pg
-
-heuristics.py - the factors caculated for each area
-
-# Funding
-Development supported by NSF ICER 1343760
-
-# License
-MIT
-=======
 #### preprocess.sh
 **Usage:**  `./preprocess.sh ~/Downloads/document.pdf`  
 **Purpose:** Does the following:
@@ -57,4 +46,9 @@ Contains `brew` installs for dependencies as well as the `CREATE TABLE` statemen
 
 #### tagger
 A flask application that runs on port 5555 that can be used for creating training data.
->>>>>>> 7c70552cabf0c13d3a26f978b84fbefcbf9302c1
+
+# Funding
+Development supported by NSF ICER 1343760
+
+# License
+MIT
