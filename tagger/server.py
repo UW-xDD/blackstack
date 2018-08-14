@@ -48,8 +48,8 @@ def random_area():
       n_lines::float / (select max(n_lines) from areas) as n_lines
       FROM areas
       JOIN area_docs ON areas.area_id = area_docs.area_id
-      WHERE area > 100000
-      and (doc_id != '2214' and page_no <= 20)
+      LEFT JOIN area_labels ON area_labels.area_id = areas.area_id
+      WHERE area > 100000 AND label_id IS NULL
       ORDER BY random()
       LIMIT 1
     """)
@@ -113,7 +113,7 @@ def get_area_image(doc, page, extract):
             )
 
     plt.axis('off')
-    fig.savefig('tmp/' + img_name + '.png', dpi=400, bbox_inches='tight', pad_inches=0)
+    fig.savefig('tmp/' + img_name + '.png', dpi=200, bbox_inches='tight', pad_inches=0)
     plt.close(fig)
 
     # image.crop((extract['x1'], extract['y1'], extract['x2'], extract['y2'])).save('tmp/' + img_name + '.png', 'png')
@@ -200,8 +200,7 @@ clf = svm.SVC(gamma=1, C=100, probability=True, cache_size=500, kernel='rbf')
 
 clf.fit(train, label)
 
-print clf.classes_
-
+# print clf.classes_
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5555)
