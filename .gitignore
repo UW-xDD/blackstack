@@ -2,3 +2,6 @@
 *.pdf
 *.png
 .DS_Store
+docs
+env
+.env
