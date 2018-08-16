@@ -1,6 +1,6 @@
-# ocr-classify
+# Blackstack
 
-A machine learning approach to table and figure extraction
+A machine learning approach to table and figure extraction. Uses SciKit Learn's Support Vector Machines and a custom annotator to build a model for entity extraction.
 
 ## Installation
 
@@ -11,21 +11,53 @@ brew install ghostscript parallel tesseract
 
 Assuming you have Postgres already installed, set up the database:
 ````
-createdb ocr-classify
-psql ocr-classify < setup/schema.sql
+createdb blackstack
+psql blackstack < setup/schema.sql
 ````
 
-## Creating a model
-OCR-Classify relies on training data to build a model for area classification. The folder `/tagger` contains a Flask application that runs on port `5555` that helps create this data. It will present the user with an area on a page and a list of tags. When a tag is selected, the data is stored in the Postgres database for future model creation.
+## Getting started
 
-Additionally you can load around 5k example labels using the provided example data:
+#### Preprocessing
+Before a model can be trained, documents to use as training data must be selected. If you are attempting to extract entities from a specific journal or publisher it is recommended that your training data also come from that journal or publisher. If you are trying to create a general classifier you should have a good sample of documents from across disciplines, publishers, etc.
+
+The number of documents you choose is up to you and will influence the accuracy of the model.
+
+To process a document for use in the annotator run the following:
+````
+./preprocess.sh /path/to/your/document.pdf
+````
+
+This will create a folder `./docs/document` that contains a PNG for each page of the PDF, an HTML file that contains the Tesseract output for each page, moves the original PDF to that folder, runs statistics on the Tesseract output and stores those within Postgres.
+
+
+#### Creating a model
+Once your training documents have been processed you can annotate them using the Flask application in `/tagger`. To start it, simply `cd tagger` and run `python server.py` to start the application. You can then navigate to `http://localhost:5555` in your web browser to begin tagging.
+
+You will be presented with a page from one of the training documents and a box around a section of the page. Click the button on the left that best describes that area. If you don't know or it is ambiguous select "Other".
+
+The table on the left side of the window will display the model's current probability for each category for the given area. Stopping and restarting the tagging application will update the model with the training data you have produced.
+
+If you'd like to play around with Blackstack without creating your own training data you can load around 5k example labels using the provided example data that were produced using heterogenous geoscience articles.
 
 ````
-psql ocr-classify < setup/example_data.sql
+psql blackstack < setup/example_data.sql
 ````
 
+## FAQ
 
-## Info
+__Why is the figure/table/map/etc cut off or otherwise incomplete?__  
+Blackstack depends on Tesseract's concept of "areas" and its ability to accurate identify them. While it is generally good at identifying blocks of text it is less consistent when there are combinations of text and graphics. Blackstack attempts to resolve some of these issues by merging adjacent "areas" that have a high probability of being related, yet issues still remain.
+
+__Why is something that is clearly not a graphic extracted as one?__  
+Tesseract can occasionally be confused by certain page layouts, especially cover pages. Since Blackstack depends on Tesseract to accurately identify "areas" it can only be as accurate as Tesseract.
+
+## Funding
+Development supported by NSF ICER 1343760
+
+## License
+MIT
+
+## Other Info
 #### preprocess.sh
 **Usage:**  `./preprocess.sh ~/Downloads/document.pdf`  
 **Purpose:** Does the following:
@@ -53,9 +85,3 @@ and returns those pages with all areas tagged with their classification.
 
 #### tagger
 A flask application that runs on port 5555 that can be used for creating training data.
-
-# Funding
-Development supported by NSF ICER 1343760
-
-# License
-MIT
