@@ -7,7 +7,7 @@ import psycopg2
 from psycopg2.extensions import AsIs
 
 # Connect to Postgres
-connection = psycopg2.connect(dbname='ocr-classify', user='john', host='localhost', port='5432')
+connection = psycopg2.connect(dbname='blackstack', user='john', host='localhost', port='5432')
 cursor = connection.cursor()
 
 if len(sys.argv) != 2:

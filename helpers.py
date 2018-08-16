@@ -88,6 +88,8 @@ def enlarge_extract(extract, area):
 
 
 def rectangles_intersect(a, b):
+    if not 'x1' in a or not 'x1' in b:
+        return False
     # Determine whether or not two rectangles intersect
     if (a['x1'] < b['x2']) and (a['x2'] > b['x1']) and (a['y1'] < b['y2']) and (a['y2'] > b['y1']):
         return True
@@ -96,6 +98,8 @@ def rectangles_intersect(a, b):
 
 
 def extractbbox(title):
+    if not title:
+        return {}
     # Given a tesseract title string, extract the bounding box coordinates
     for part in title.split(';'):
         if part.strip()[0:4] == 'bbox':
@@ -157,8 +161,8 @@ def get_gaps(x_axis):
 
 
 def expand_area(input_area, all_areas):
-    text_blocks = [area for area in all_areas if area['type'] == 'text block']
-    candidate_areas = [area for area in all_areas if area['type'] != 'text block' and area['type'] != 'decoration']
+    text_blocks = [area for area in all_areas if area['type'] == 'body']
+    candidate_areas = [area for area in all_areas if area['type'] != 'body' and area['type'] != 'decoration']
 
     extract = {
         'x1': input_area['x1'],
@@ -318,10 +322,10 @@ def get_header_footer(pages, page_height, page_width):
     areas = [area for areas in page_areas for area in areas]
 
     # Get words in areas that are not text blocks
-    words = [ area['soup'].find_all('span', 'ocrx_word') for area in areas if area['type'] != 'text block'  ]
+    words = [ area['soup'].find_all('span', 'ocrx_word') for area in areas if area['type'] != 'body'  ]
 
     # Get the dimensions of all areas identified as text blocks
-    text_blocks = [ {'y1': area['y1'], 'y2': area['y2'], 'x1': area['x1'], 'x2': area['x2']} for area in areas if area['type'] == 'text block' ]
+    text_blocks = [ {'y1': area['y1'], 'y2': area['y2'], 'x1': area['x1'], 'x2': area['x2']} for area in areas if area['type'] == 'body' ]
     # Maximum extent of text paragraphs in the document
     text_block_area = {
         'x1': min([ area['x1'] for area in text_blocks ]),
@@ -380,83 +384,44 @@ def buffer(area, amt):
         'y2': area['y2'] + amt
     }
 
-def reclassify_areas(page_areas, line_height):
-    buffered_areas = [ buffer(area, line_height) for area in page_areas ]
-    relationships = {}
 
-    for area_idx, area in enumerate(buffered_areas):
-        relationships[area_idx] = [ { 'idx': i, 'geom': a } for i, a in enumerate(buffered_areas) if area_idx != i and rectangles_intersect(area, a) ]
-
-    new_areas = []
-    for area in relationships:
-        part_of_existing = False
-        # Check if it is part of an existing new area
-        for i, new_area in enumerate(new_areas):
-            if part_of_existing:
-                continue
-
-            if area in new_area['members']:
-                part_of_existing = True
-                # Append to this new area
-                new_areas[i]['geom'] = enlarge_extract(new_areas[i]['geom'], buffered_areas[area])
-                new_areas[i]['members'].add(area)
-                for r in relationships[area]:
-                    new_areas[i]['geom'] = enlarge_extract(new_areas[i]['geom'], r['geom'])
-                    new_areas[i]['members'].add(r['idx'])
-
-        if not part_of_existing:
-            new_area = { 'x1': 9999999, 'y1': 9999999, 'x2': -9999999, 'y2': -9999999 }
-            members = set([area])
-
-            new_area = enlarge_extract(new_area, buffered_areas[area])
-            for r in relationships[area]:
-                new_area = enlarge_extract(new_area, r['geom'])
-                members.add(r['idx'])
-
-            new_areas.append({
-                'members': members,
-                'geom': new_area
-            })
-
-    return new_areas
-
-def plot_new_areas(page_no, areas):
-    fig = plt.figure()
-    ax = fig.add_subplot(111, aspect='equal')
-
-    #areas = [ makeBox(area) for area in area ]
-#    words = [ makeBox(word) for word in words ]
-    areas = [ area['geom'] for area in areas ]
-    for area in areas:
-        ax.add_patch(patches.Rectangle(
-            (int(area['x1']), int(area['y1'])),
-            int(area['x2']) - int(area['x1']),
-            int(area['y2']) - int(area['y1']),
-            fill=False,
-            linewidth=0.5,
-            edgecolor="#0000FF"
-            )
-            )
-
-
-    # for word in words:
-    #     ax.add_patch(patches.Rectangle(
-    #         (int(word['x1']), int(word['y1'])),
-    #         int(word['x2']) - int(word['x1']),
-    #         int(word['y2']) - int(word['y1']),
-    #         fill=False,
-    #         linewidth=0.1,
-    #         edgecolor="#000000"
-    #         )
-    #         )
-
-    plt.ylim(0, 6600)
-    plt.xlim(0, 5100)
-    plt.axis("off")
-    ax = plt.gca()
-    ax.invert_yaxis()
-    plt.axis('off')
-    fig.savefig('./' + page_no + '.png', dpi=400, bbox_inches='tight', pad_inches=0)
+# def plot_new_areas(page_no, areas):
+#     fig = plt.figure()
+#     ax = fig.add_subplot(111, aspect='equal')
+#
+#     #areas = [ makeBox(area) for area in area ]
+# #    words = [ makeBox(word) for word in words ]
+#     areas = [ area['geom'] for area in areas ]
+#     for area in areas:
+#         ax.add_patch(patches.Rectangle(
+#             (int(area['x1']), int(area['y1'])),
+#             int(area['x2']) - int(area['x1']),
+#             int(area['y2']) - int(area['y1']),
+#             fill=False,
+#             linewidth=0.5,
+#             edgecolor="#0000FF"
+#             )
+#             )
+#
+#
+#     # for word in words:
+#     #     ax.add_patch(patches.Rectangle(
+#     #         (int(word['x1']), int(word['y1'])),
+#     #         int(word['x2']) - int(word['x1']),
+#     #         int(word['y2']) - int(word['y1']),
+#     #         fill=False,
+#     #         linewidth=0.1,
+#     #         edgecolor="#000000"
+#     #         )
+#     #         )
+#
+#     plt.ylim(0, 6600)
+#     plt.xlim(0, 5100)
+#     plt.axis("off")
+#     ax = plt.gca()
+#     ax.invert_yaxis()
+#     plt.axis('off')
+#     fig.savefig('./' + page_no + '.png', dpi=400, bbox_inches='tight', pad_inches=0)
 
 
 def area_summary(area):

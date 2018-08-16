@@ -6,7 +6,7 @@ import helpers
 import heuristics
 
 # Connect to Postgres
-connection = psycopg2.connect(dbname='ocr-classify', user='john', host='localhost', port='5432')
+connection = psycopg2.connect(dbname='blackstack', user='john', host='localhost', port='5432')
 #cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 cursor = connection.cursor()
 
