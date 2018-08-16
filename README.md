@@ -43,6 +43,22 @@ If you'd like to play around with Blackstack without creating your own training 
 psql blackstack < setup/example_data.sql
 ````
 
+#### Extracting entities from a PDF
+Once you have created training data for the machine learning model you can run it against a PDF. To do so you must first prepare the PDF for processing similarly to the way it is prepared for use a a training document.
+
+````
+./prepare.sh /path/to/a/document.pdf
+````
+
+This will convert the PDF to PNGs and run Tesseract on them. Once that is done you can run the extractor on it as so:
+
+````
+python extract.py ./docs/document
+````
+
+The entities found will then be found in `./docs/document/tables`
+
+
 ## FAQ
 
 __Why is the figure/table/map/etc cut off or otherwise incomplete?__  
