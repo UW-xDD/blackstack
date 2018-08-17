@@ -538,7 +538,7 @@ def extract_tables(document_path):
 
 
 
-
+# WAT WHY IS THIS HERE
 import argparse
 
 parser = argparse.ArgumentParser(

@@ -3,6 +3,7 @@ from sklearn import svm
 import helpers
 import heuristics
 from config import Credentials
+import psycopg2
 
 # Connect to Postgres
 connection = psycopg2.connect(

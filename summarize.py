@@ -10,8 +10,8 @@ from config import Credentials
 # Connect to Postgres
 connection = psycopg2.connect(
     dbname=Credentials.PG_DATABASE,
-    user=Credentials.PGUSER,
-    password=Credentials.PG_PASSWORD
+    user=Credentials.PG_USERNAME,
+    password=Credentials.PG_PASSWORD,
     host=Credentials.PG_HOST,
     port=Credentials.PG_PORT
 )
