@@ -5,3 +5,4 @@
 docs
 env
 .env
+config.py

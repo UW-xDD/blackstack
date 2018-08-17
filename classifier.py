@@ -1,13 +1,17 @@
-from psycopg2.extensions import AsIs
-import psycopg2.extras
 import numpy as np
 from sklearn import svm
 import helpers
 import heuristics
+from config import Credentials
 
 # Connect to Postgres
-connection = psycopg2.connect(dbname='blackstack', user='john', host='localhost', port='5432')
-#cursor = connection.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+connection = psycopg2.connect(
+    dbname=Credentials.PG_DATABASE,
+    user=Credentials.PG_USERNAME,
+    password=Credentials.PG_PASSWORD,
+    host=Credentials.PG_HOST,
+    port=Credentials.PG_PORT
+)
 cursor = connection.cursor()
 
 def create():

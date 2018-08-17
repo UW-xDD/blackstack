@@ -6,8 +6,15 @@ from bs4 import BeautifulSoup
 import psycopg2
 from psycopg2.extensions import AsIs
 
+from config import Credentials
 # Connect to Postgres
-connection = psycopg2.connect(dbname='blackstack', user='john', host='localhost', port='5432')
+connection = psycopg2.connect(
+    dbname=Credentials.PG_DATABASE,
+    user=Credentials.PGUSER,
+    password=Credentials.PG_PASSWORD
+    host=Credentials.PG_HOST,
+    port=Credentials.PG_PORT
+)
 cursor = connection.cursor()
 
 if len(sys.argv) != 2:
