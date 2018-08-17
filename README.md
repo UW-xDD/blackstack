@@ -43,10 +43,10 @@ The number of documents you choose is up to you and will influence the accuracy 
 
 To process a document for use in the annotator run the following:
 ````
-./preprocess.sh /path/to/your/document.pdf
+./preprocess.sh training /path/to/your/document.pdf
 ````
 
-This will create a folder `./docs/document` that contains a PNG for each page of the PDF, an HTML file that contains the Tesseract output for each page, moves the original PDF to that folder, runs statistics on the Tesseract output and stores those within Postgres.
+This will create a folder `./docs/training/<document>` that contains a PNG for each page of the PDF, an HTML file that contains the Tesseract output for each page, moves the original PDF to that folder, runs statistics on the Tesseract output and stores those within Postgres.
 
 
 #### Creating a model
@@ -66,16 +66,16 @@ psql blackstack < setup/example_data.sql
 Once you have created training data for the machine learning model you can run it against a PDF. To do so you must first prepare the PDF for processing similarly to the way it is prepared for use a a training document.
 
 ````
-./prepare.sh /path/to/a/document.pdf
+./preprocess.sh classified /path/to/a/<document>.pdf
 ````
 
 This will convert the PDF to PNGs and run Tesseract on them. Once that is done you can run the extractor on it as so:
 
 ````
-python extract.py ./docs/document
+python extract.py ./docs/classified/document
 ````
 
-The entities found will then be found in `./docs/document/tables`
+The entities found will then be found in `./docs/classified/<document>/tables`
 
 
 ## FAQ
