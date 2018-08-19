@@ -1,6 +1,8 @@
 # Blackstack
 
-A machine learning approach to table and figure extraction. Uses SciKit Learn's Support Vector Machines and a custom annotator to build a model for entity extraction.
+A machine learning approach to table and figure extraction. Uses SciKit Learn's Support Vector Machines and a custom annotator to build a model for entity extraction.  
+
+Whereas other approaches to table and figure reading depend on content to be well-structured, Blackstack ignores the issue of table and figure _data_ extraction (see [Fonduer](https://github.com/HazyResearch/fonduer)) and instead uses a format-agnostic approach to extracting entities as images that can then be used for future analysis or querying.
 
 ## Installation
 
