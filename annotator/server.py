@@ -5,6 +5,7 @@ import logging
 from PIL import Image
 import string
 import random
+import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np

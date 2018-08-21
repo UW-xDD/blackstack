@@ -1,0 +1,19 @@
+version: '3'
+services:
+  blackstack:
+    build: .
+    image: gdd/blackstack
+    environment:
+      - PG_PASSWORD=blackstack
+      - PG_USERNAME=postgres
+    ports:
+      - 5555:5555
+
+  postgres:
+    image: postgres:10.5-alpine
+    environment:
+      - POSTGRES_PASSWORD=blackstack
+      - POSTGRES_DB=blackstack
+    volumes:
+      - ./setup:/docker-entrypoint-initdb.d/
+

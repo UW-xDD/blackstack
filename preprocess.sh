@@ -13,6 +13,9 @@ fi
 filename=$(basename "$2")
 docname="${filename%.*}"
 
+mkdir -p docs/$docname
+mkdir -p docs/$docname/png
+
 mkdir -p docs/$1/$docname
 mkdir -p docs/$1/$docname/png
 mkdir -p docs/$1/$docname/tesseract
@@ -27,7 +30,7 @@ cp $2 ./docs/$docname/orig.pdf
 ls ./docs/$docname/png | grep -o '[0-9]\+' | parallel -j 4 "./process.sh $1 $docname {}"
 
 if [ "$1" == "training" ]
-  then python summarize.py $docname
+  then python3 summarize.py $docname
 fi
 
 echo "$filename has been processed and can be found in ./docs/$1/$docname"

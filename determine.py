@@ -115,10 +115,10 @@ for area in data:
             groups[area[3]]['p'].append(each[1])
 
 for cat in groups:
-    print cat
-    print '   + p (avg) ', (sum(groups[cat]['p']) / len(groups[cat]['p']))
-    print '   + correct ', (sum(groups[cat]['label']) / float(len(groups[cat]['label']))) * 100, '%'
+    print(cat)
+    print('   + p (avg) ', (sum(groups[cat]['p']) / len(groups[cat]['p'])))
+    print('   + correct ', (sum(groups[cat]['label']) / float(len(groups[cat]['label']))) * 100, '%')
 
-print 'TOTAL'
-print '   + p (avg) ', sum([ val for val in groups[cat]['p'] for cat in groups ]) / len([ val for val in groups[cat]['p'] for cat in groups ])
-print '   + correct ', sum([ val for val in groups[cat]['label'] for cat in groups ]) / float(60) * 100, '%'
+print('TOTAL')
+print('   + p (avg) ', sum([ val for val in groups[cat]['p'] for cat in groups ]) / len([ val for val in groups[cat]['p'] for cat in groups ]))
+print('   + correct ', sum([ val for val in groups[cat]['label'] for cat in groups ]) / float(60) * 100, '%')

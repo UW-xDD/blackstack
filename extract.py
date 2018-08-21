@@ -7,6 +7,8 @@ import re
 import numpy as np
 import itertools
 import glob
+import logging
+
 np.set_printoptions(threshold=np.inf)
 
 import heuristics
@@ -15,6 +17,8 @@ import classifier
 from config import Credentials
 
 clf = classifier.create()
+
+logging.basicConfig(level=logging.INFO)
 
 # Grab this much extra space around tables
 padding = 20
@@ -174,18 +178,18 @@ def process_page(doc_stats, page):
         # dedicated line (ex: Table 1)
         if dedicated_line_matches and dedicated_line_matches.group(0) == clean_line:
             bbox['name'] = dedicated_line_matches.group(0)
-            print '  ', bbox['name'].replace('.', '')
+            print('  ', bbox['name'].replace('.', ''))
             indicator_lines.append(bbox)
 
         # Other
         elif caption_matches:
             bbox['name'] = caption_matches.group(0)
-            print '  ',  bbox['name'].replace('.', '')
+            print('  ',  bbox['name'].replace('.', ''))
             indicator_lines.append(bbox)
 
         elif bad_tesseract_matches:
             bbox['name'] = bad_tesseract_matches.group(0)
-            print '  ', bbox['name'].replace('.', '')
+            print('  ', bbox['name'].replace('.', ''))
             indicator_lines.append(bbox)
 
     # Assign a caption to each table, and keep track of which captions are assigned to tables. caption_idx: [area_idx, area_idx, ...]
@@ -332,7 +336,7 @@ def process_page(doc_stats, page):
     # Extracts are bounding boxes that will be used to actually extract the tables
     extracts = []
     for caption, areas in caption_areas.iteritems():
-        print indicator_lines[caption]
+        print(indicator_lines[caption])
         area_of_interest_centroid_y_mean = np.mean([ helpers.centroid(page['areas'][area])['y'] for area in areas ])
         indicator_line_centroid_y = helpers.centroid(indicator_lines[caption])['y']
 
@@ -367,11 +371,11 @@ def process_page(doc_stats, page):
             all_tables.append(area_idx)
 
     if sorted(assigned_tables) == sorted(all_tables):
-        print 'all tables have a caption on page', page['page_no']
+        print('all tables have a caption on page', page['page_no'])
     else:
         unassigned_tables = set(all_tables).difference(assigned_tables)
-        print 'Not all tables have a caption on page', page['page_no']
-        print 'Not assigned - ', unassigned_tables
+        print('Not all tables have a caption on page', page['page_no'])
+        print('Not assigned - ', unassigned_tables)
 
     orphan_extracts = []
     for table in unassigned_tables:
@@ -517,10 +521,10 @@ def extract_tables(document_path):
 
 
     doc_stats['found_tables'] = figure_idx
-    print 'these tables were found --'
+    print('these tables were found --')
 
     for ttype in figure_idx:
-        print '    ', ttype, figure_idx[ttype]
+        print('    ', ttype, figure_idx[ttype])
 
     for page in pages:
         page_extracts = process_page(doc_stats, page)
@@ -552,7 +556,7 @@ parser.add_argument(nargs="?", dest="doc_path",
 arguments = parser.parse_args()
 
 if len(arguments.doc_path) == 0:
-    print "Please enter a valid document path"
+    print("Please enter a valid document path")
     sys.exit(1)
 
 

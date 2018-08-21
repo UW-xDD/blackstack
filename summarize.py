@@ -18,7 +18,7 @@ connection = psycopg2.connect(
 cursor = connection.cursor()
 
 if len(sys.argv) != 2:
-    print 'No document provided'
+    print('No document provided')
     sys.exit(1)
 
 doc_id = sys.argv[1]
