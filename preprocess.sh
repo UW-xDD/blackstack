@@ -27,7 +27,7 @@ gs -dBATCH -dNOPAUSE -sDEVICE=png16m -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -r6
 
 cp $2 ./docs/$docname/orig.pdf
 
-ls ./docs/$docname/png | grep -o '[0-9]\+' | parallel -j 4 "./process.sh $1 $docname {}"
+ls ./docs/$1/$docname/png | grep -o '[0-9]\+' | parallel -j 4 "./process.sh $1 $docname {}"
 
 if [ "$1" == "training" ]
   then python3 summarize.py $docname
