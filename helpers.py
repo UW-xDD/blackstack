@@ -441,8 +441,11 @@ def area_summary(area):
         summary['line_heights'].append(height)
 
     # Number of words
-    summary['words'] = len(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' ')))
-
+    try:
+        summary['words'] = len(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' ')))
+    except:
+        summary['words'] = 0
+        
     # Area
     summary['area'] = (summary['x2'] - summary['x1']) * (summary['y2'] - summary['y1'])
 
