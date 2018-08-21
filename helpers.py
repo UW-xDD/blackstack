@@ -75,7 +75,7 @@ def union_extracts(extracts):
 
 def extract_table(doc, page, extract):
     image = Image.open('%s/png/page_%s.png' % (doc, page))
-    image.crop((extract['x1'], extract['y1'], extract['x2'], extract['y2'])).save(doc + '/tables/page_' + str(page) + '_' + extract['name'].replace(' ', '_').replace('.', '') + '.png', 'png')
+    image.crop((extract['x1'], extract['y1'], extract['x2'], extract['y2'])).save(doc + '/extracts/page_' + str(page) + '_' + extract['name'].replace(' ', '_').replace('.', '') + '.png', 'png')
 
 
 def enlarge_extract(extract, area):
@@ -445,7 +445,7 @@ def area_summary(area):
         summary['words'] = len(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' ')))
     except:
         summary['words'] = 0
-        
+
     # Area
     summary['area'] = (summary['x2'] - summary['x1']) * (summary['y2'] - summary['y1'])
 
