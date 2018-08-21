@@ -19,7 +19,6 @@ def create():
     cursor.execute("""
         SELECT
             a.area_id,
-            area_docs.doc_id,
             page_no,
             labels.name AS label,
             has_words::int,
@@ -43,16 +42,15 @@ def create():
             n_gaps::float / (select max(n_gaps) from areas) as n_gaps,
             n_lines::float / (select max(n_lines) from areas) as n_lines
         FROM areas a
-        JOIN area_docs ON a.area_id = area_docs.area_id
         JOIN area_labels al ON al.area_id = a.area_id
         JOIN labels ON labels.label_id = al.label_id
     """)
     data = cursor.fetchall()
 
     # Omit area_id, doc_id, page_no, and label_name
-    train = [ list(d[4:]) for d in data ]
+    train = [ list(d[3:]) for d in data ]
 
-    label = np.array([ d[3] for d in data ])
+    label = np.array([ d[2] for d in data ])
     #index = [ d[0:3] for d in data ]
 
     # gamma - influence of a single training example. low = far, high = close
