@@ -20,7 +20,9 @@ mkdir -p docs/$1/$docname
 mkdir -p docs/$1/$docname/png
 mkdir -p docs/$1/$docname/tesseract
 if [ "$1" == "classified" ]
-  then mkdir -p docs/$1/$docname/extracts
+then 
+    mkdir -p docs/$1/$docname/extracts
+    mkdir -p docs/$1/$docname/annotated
 fi
 
 gs -dBATCH -dNOPAUSE -sDEVICE=png16m -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -r600 -sOutputFile="./docs/$1/$docname/png/page_%d.png" $2

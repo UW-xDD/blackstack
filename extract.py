@@ -9,6 +9,9 @@ import numpy as np
 import itertools
 import glob
 import logging
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from scipy.misc import imread
 
 np.set_printoptions(threshold=np.inf)
 
@@ -422,6 +425,7 @@ def process_page(doc_stats, page):
 
 
 # Entry into table extraction
+@profile
 def extract_tables(document_path):
     # Connect to Postgres
     connection = psycopg2.connect(
@@ -473,7 +477,7 @@ def extract_tables(document_path):
 
             area['classification_p'] = classifications[0][1]
 
-            area['type'] = clf.predict([ heuristics.classify_list(area, doc_stats, page['areas']) ])
+            area['type'] = clf.predict([ heuristics.classify_list(area, doc_stats, page['areas']) ])[0]
 
 
     # Attempt to identify all charts/tables/etc in the paper by looking at the text layer
@@ -525,6 +529,54 @@ def extract_tables(document_path):
 
     for ttype in figure_idx:
         print('    ', ttype, figure_idx[ttype])
+
+    colormap = {
+            'other' : '#26547C',
+            'header / footer': '#EF476F',
+            'graphic caption' : '#FFD166',
+            'graphic' : '#06D6A0',
+            'reference' : '#3E92CC',
+            'body' : '#F4FAFF'
+            }
+    for page in pages:
+        fig = plt.figure()
+        print(document_path + "/png/page_%s.png" % page['page_no'])
+        img = plt.imread(document_path + "/png/page_%s.png" % page['page_no'])
+        ax = fig.add_subplot(111, aspect='equal')
+        for area in page['areas']:
+            box = {
+                    '_left': int(area['x1']),
+                    '_top': int(area['y1']),
+                    '_right': int(area['x2']),
+                    '_bottom': int(area['y2']),
+                    'width': int(area['x2']) - int(area['x1']),
+                    'height': int(area['y2']) - int(area['y1'])
+                    }
+            ax.add_patch(patches.Rectangle(
+                (box['_left'], box['_top']),
+                box['_right'] - box['_left'],
+                box['_bottom'] - box['_top'],
+                fill=True,
+                linewidth=0.5,
+                facecolor=colormap[area['type']],
+                label=area['type'],
+                alpha = 0.2
+                )
+                )
+        plt.ylim(0,pages[0]['page']['y2'])
+        plt.xlim(0,pages[0]['page']['x2'])
+        plt.axis("off")
+        plt.imshow(img, zorder=0)
+        ax = plt.gca()
+        ax.invert_yaxis()
+        patchlist = [
+                patches.Patch(color = color, label = label, alpha=0.2)
+                for label,color in colormap.items()
+                ]
+        fig.legend(patchlist, colormap.keys(), loc='lower center', fontsize='x-small', ncol=int(len(colormap)/2), bbox_transform=fig.transFigure)
+        plt.axis('off')
+        fig.savefig(document_path + "/annotated/page_%s_with_areatypes.png" % page['page_no'], dpi=400, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
 
     for page in pages:
         page_extracts = process_page(doc_stats, page)
