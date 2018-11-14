@@ -576,7 +576,8 @@ def extract_tables(document_path):
         fig.legend(patchlist, colormap.keys(), loc='lower center', fontsize='x-small', ncol=int(len(colormap)/2), bbox_transform=fig.transFigure)
         plt.axis('off')
         fig.savefig(document_path + "/annotated/page_%s_with_areatypes.png" % page['page_no'], dpi=400, bbox_inches='tight', pad_inches=0)
-        plt.close(fig)
+        fig.clf()
+        plt.close()
 
     for page in pages:
         page_extracts = process_page(doc_stats, page)
