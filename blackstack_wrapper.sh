@@ -3,22 +3,34 @@
 
 if [ -z "${BLACKSTACK_MODE}" ]
 then
-    echo "Please specify BLACKSTACK_MODE as an envvar"
-    exit 1
+    echo "No BLACKSTACK_MODE specified -- assuming classification mode on prebuilt model."
+    BLACKSTACK_MODE='classified'
 else
     BLACKSTACK_MODE=${BLACKSTACK_MODE}
-    echo Running blackstack in $BLACKSTACK_MODE mode.
-    if [ "$BLACKSTACK_MODE" = "classified" ] 
-    then
-        echo classified
-        ./preprocess.sh classified test/1-s2.0-0031018280900164-main.pdf ; 
-        python3 extract.py ./docs/classified/1-s2*/
-    elif [ "$BLACKSTACK_MODE" = "training" ] 
-    then
-        echo training
-        ./preprocess.sh training test/1-s2.0-0031018280900164-main.pdf
+fi
+
+echo Running blackstack in $BLACKSTACK_MODE mode.
+if [ "$BLACKSTACK_MODE" = "classified" ] 
+then
+    for doc in input/*.pdf;
+    do
+        filename=$(basename "$doc")
+        docname="${filename%.*}"
+        echo ./preprocess.sh classified input/$filename
+        ./preprocess.sh classified input/$filename
+        echo python3 extract.py ./docs/classified/$docname/
+        python3 extract.py ./docs/classified/$docname/
+    done
+elif [ "$BLACKSTACK_MODE" = "training" ] 
+then
+    for doc in input/*.pdf;
+    do
+        filename=$(basename "$doc")
+        docname="${filename%.*}"
+        ./preprocess.sh training input/$filename
         python3 server.py
-    else
-        echo "Unknown blackstack mode specified. Please choose classified or training."
-    fi
+    done
+else
+    echo "Unknown blackstack mode specified. Please choose classified or training."
+    exit 1
 fi
