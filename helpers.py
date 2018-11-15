@@ -11,10 +11,6 @@ import matplotlib.patches as patches
 from difflib import SequenceMatcher
 from bs4 import BeautifulSoup
 
-import classifier
-
-clf = classifier.create()
-
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
