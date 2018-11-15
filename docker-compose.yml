@@ -9,6 +9,8 @@ services:
       - BLACKSTACK_MODE=${BLACKSTACK_MODE}
     ports:
       - 5555:5555
+    volumes:
+      - ./docs/:/app/pdf/docs/
 
   postgres:
     image: postgres:10.5-alpine
