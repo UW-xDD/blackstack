@@ -23,13 +23,12 @@ COPY *py $PDF/
 COPY annotator $PDF/
 COPY config.py.env $PDF/config.py
 
-COPY test/WH897R_29453_000452.pdf $PDF/test/
+COPY 1-s2.0-0031018280900164-main.pdf $PDF/test/
+ARG BLACKSTACK_MODE
 
 RUN mkdir out
 WORKDIR $PDF
 
 EXPOSE 5555
 
-CMD bash -c "sleep 10; $PDF/preprocess.sh training test/WH897R_29453_000452.pdf; python3 $PDF/server.py"
-#CMD ["./preprocess.sh", "training", "test/WH897R_29453_000452.pdf"]
-
+CMD ["./blackstack_wrapper.sh"]
