@@ -425,7 +425,6 @@ def process_page(doc_stats, page):
 
 
 # Entry into table extraction
-@profile
 def extract_tables(document_path):
     # Connect to Postgres
     connection = psycopg2.connect(
