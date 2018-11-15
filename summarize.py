@@ -3,6 +3,7 @@ import glob
 import heuristics
 import helpers
 from bs4 import BeautifulSoup
+import codecs
 import psycopg2
 from psycopg2.extensions import AsIs
 
@@ -23,12 +24,12 @@ if len(sys.argv) != 2:
 
 doc_id = sys.argv[1]
 
-page_paths = glob.glob('./docs/' + doc_id + '/tesseract/*.html')
+page_paths = glob.glob('./docs/training/' + doc_id + '/tesseract/*.html')
 
 pages = []
 for page_no, page in enumerate(page_paths):
     # Read in each tesseract page with BeautifulSoup so we can look at the document holistically
-    with open(page) as hocr:
+    with codecs.open(page, "r", "utf-8") as hocr:
         text = hocr.read()
         soup = BeautifulSoup(text, 'html.parser')
         merged_areas = helpers.merge_areas(soup.find_all('div', 'ocr_carea'))
