@@ -28,8 +28,8 @@ then
         filename=$(basename "$doc")
         docname="${filename%.*}"
         ./preprocess.sh training input/$filename
-        python3 server.py
     done
+    python3 server.py
 else
     echo "Unknown blackstack mode specified. Please choose classified or training."
     exit 1
