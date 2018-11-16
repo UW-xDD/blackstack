@@ -22,9 +22,7 @@ COPY *sh $PDF/
 COPY *py $PDF/
 COPY annotator $PDF/
 COPY config.py.env $PDF/config.py
-
-COPY 1-s2.0-0031018280900164-main.pdf $PDF/test/
-ARG BLACKSTACK_MODE
+COPY input/ $PDF/input/
 
 RUN mkdir out
 WORKDIR $PDF
