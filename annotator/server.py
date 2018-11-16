@@ -9,6 +9,7 @@ import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
+from collections import defaultdict
 from sklearn import svm
 
 # Import database credentials
@@ -86,15 +87,14 @@ def random_area():
     if bad:
         return random_area()
 
-    new_area = {
-        'area_id': area[0],
-        'doc_id': area[1],
-        'page_no': area[2],
-        'x1': area[3],
-        'y1': area[4],
-        'x2': area[5],
-        'y2': area[6]
-    }
+    new_area = defaultdict(float)
+    new_area['area_id'] = area[0]
+    new_area['doc_id'] = area[1]
+    new_area['page_no'] = area[2]
+    new_area['x1'] = area[3]
+    new_area['y1'] = area[4]
+    new_area['x2'] = area[5]
+    new_area['y2'] = area[6]
 
     for each in p:
         # should be label, probability
