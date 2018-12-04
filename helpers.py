@@ -438,7 +438,7 @@ def area_summary(area):
 
     # Number of words
     try:
-        summary['words'] = len(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' ')))
+        summary['words'] = len(list(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' '))))
     except:
         summary['words'] = 0
 
