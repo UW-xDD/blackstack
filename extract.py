@@ -3,11 +3,15 @@ import os
 from bs4 import BeautifulSoup
 import psycopg2
 import math
+import codecs
 import re
 import numpy as np
 import itertools
 import glob
 import logging
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from scipy.misc import imread
 
 np.set_printoptions(threshold=np.inf)
 
@@ -82,11 +86,11 @@ def process_page(doc_stats, page):
 
     def expand_extraction(extract_idx, props):
         # Iterate on above and below areas for each extract
-        for direction, areas in extract_relations[extract_idx].iteritems():
+        for direction, areas in extract_relations[extract_idx].items():
             stopped = False
             for area_idx in extract_relations[extract_idx][direction]:
                 # Iterate on all other extracts, making sure that extending the current one won't run into any of the others
-                for extract_idx2, props2 in extract_relations.iteritems():
+                for extract_idx2, props2 in extract_relations.items():
                     if extract_idx != extract_idx2:
                         will_intersect = helpers.rectangles_intersect(extracts[extract_idx2], helpers.enlarge_extract(extracts[extract_idx], page['areas'][area_idx]))
                         if will_intersect:
@@ -271,7 +275,7 @@ def process_page(doc_stats, page):
 
 
     # Sanity check the caption-area assignments
-    for caption, areas in caption_areas.iteritems():
+    for caption, areas in caption_areas.items():
         # Only check if the caption is assigned to more than one area
         if len(areas) > 1:
             # draw a line through the middle of the caption that spans the page
@@ -335,7 +339,7 @@ def process_page(doc_stats, page):
 
     # Extracts are bounding boxes that will be used to actually extract the tables
     extracts = []
-    for caption, areas in caption_areas.iteritems():
+    for caption, areas in caption_areas.items():
         print(indicator_lines[caption])
         area_of_interest_centroid_y_mean = np.mean([ helpers.centroid(page['areas'][area])['y'] for area in areas ])
         indicator_line_centroid_y = helpers.centroid(indicator_lines[caption])['y']
@@ -362,7 +366,7 @@ def process_page(doc_stats, page):
     # Make sure each table was assigned a caption
     assigned_tables = []
     unassigned_tables = []
-    for caption_idx, areas in caption_areas.iteritems():
+    for caption_idx, areas in caption_areas.items():
         assigned_tables = assigned_tables + areas
 
     all_tables = []
@@ -400,7 +404,7 @@ def process_page(doc_stats, page):
     for extract_idx, extract in enumerate(extracts):
         expand_extraction(extract_idx, find_above_and_below(extract))
 
-    # for extract_idx, props in extract_relations.iteritems():
+    # for extract_idx, props in extract_relations.items():
     #     expand_extraction(extract_idx, props)
 
     for extract in orphan_extracts:
@@ -439,7 +443,7 @@ def extract_tables(document_path):
 
     # Read in each tesseract page with BeautifulSoup so we can look at the document holistically
     for page_no, page in enumerate(page_paths):
-        with open(page) as hocr:
+        with codecs.open(page, "r", "utf-8") as hocr:
             text = hocr.read()
             soup = BeautifulSoup(text, 'html.parser')
             merged_areas = helpers.merge_areas(soup.find_all('div', 'ocr_carea'))
@@ -467,13 +471,12 @@ def extract_tables(document_path):
             # Use the model to assign an area type and probabilty of that area type
             probabilities = clf.predict_proba([ heuristics.classify_list(area, doc_stats, page['areas']) ])
             # Apply a label to each probability
-            classifications = zip(clf.classes_, probabilities)
-            # Sort by highest probability
-            classifications.sort(key=lambda x: x[1], reverse=True)
+            classifications = zip(clf.classes_, probabilities[0])
+            classifications = sorted(classifications, key = lambda x: x[1], reverse=True)
 
-            area['classification_p'] = classifications[0][0]
+            area['classification_p'] = classifications[0][1]
 
-            area['type'] = clf.predict([ heuristics.classify_list(area, doc_stats, page['areas']) ])
+            area['type'] = clf.predict([ heuristics.classify_list(area, doc_stats, page['areas']) ])[0]
 
 
     # Attempt to identify all charts/tables/etc in the paper by looking at the text layer
@@ -525,6 +528,55 @@ def extract_tables(document_path):
 
     for ttype in figure_idx:
         print('    ', ttype, figure_idx[ttype])
+
+    colormap = {
+            'other' : '#26547C',
+            'header / footer': '#EF476F',
+            'graphic caption' : '#FFD166',
+            'graphic' : '#06D6A0',
+            'reference' : '#3E92CC',
+            'body' : '#F4FAFF'
+            }
+    for page in pages:
+        fig = plt.figure()
+        print(document_path + "/png/page_%s.png" % page['page_no'])
+        img = plt.imread(document_path + "/png/page_%s.png" % page['page_no'])
+        ax = fig.add_subplot(111, aspect='equal')
+        for area in page['areas']:
+            box = {
+                    '_left': int(area['x1']),
+                    '_top': int(area['y1']),
+                    '_right': int(area['x2']),
+                    '_bottom': int(area['y2']),
+                    'width': int(area['x2']) - int(area['x1']),
+                    'height': int(area['y2']) - int(area['y1'])
+                    }
+            ax.add_patch(patches.Rectangle(
+                (box['_left'], box['_top']),
+                box['_right'] - box['_left'],
+                box['_bottom'] - box['_top'],
+                fill=True,
+                linewidth=0.5,
+                facecolor=colormap[area['type']],
+                label=area['type'],
+                alpha = 0.2
+                )
+                )
+        plt.ylim(0,pages[0]['page']['y2'])
+        plt.xlim(0,pages[0]['page']['x2'])
+        plt.axis("off")
+        plt.imshow(img, zorder=0)
+        ax = plt.gca()
+        ax.invert_yaxis()
+        patchlist = [
+                patches.Patch(color = color, label = label, alpha=0.2)
+                for label,color in colormap.items()
+                ]
+        fig.legend(patchlist, colormap.keys(), loc='lower center', fontsize='x-small', ncol=int(len(colormap)/2), bbox_transform=fig.transFigure)
+        plt.axis('off')
+        fig.savefig(document_path + "/annotated/page_%s_with_areatypes.png" % page['page_no'], dpi=400, bbox_inches='tight', pad_inches=0)
+        fig.clf()
+        plt.close()
 
     for page in pages:
         page_extracts = process_page(doc_stats, page)

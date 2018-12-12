@@ -11,10 +11,6 @@ import matplotlib.patches as patches
 from difflib import SequenceMatcher
 from bs4 import BeautifulSoup
 
-import classifier
-
-clf = classifier.create()
-
 def similar(a, b):
     return SequenceMatcher(None, a, b).ratio()
 
@@ -442,7 +438,7 @@ def area_summary(area):
 
     # Number of words
     try:
-        summary['words'] = len(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' ')))
+        summary['words'] = len(list(filter(None, summary['soup'].getText().strip().replace('\n', ' ').replace('  ', ' ').split(' '))))
     except:
         summary['words'] = 0
 
@@ -473,12 +469,21 @@ def area_summary(area):
         for word_idx, word in enumerate(words):
             wordbbox = extractbbox(word.get('title'))
 
+            word_area = (wordbbox['x2'] - wordbbox['x1']) * (wordbbox['y2'] - wordbbox['y1'])
+            if word_area > summary['area'] or \
+                    wordbbox['x2'] > summary['x2'] or \
+                    wordbbox['x1'] < summary['x1'] or \
+                    wordbbox['y1'] < summary['y1'] or \
+                    wordbbox['y2'] > summary['y2']:
+                print("Word outside of the enclosing area! Tesseract's black box strikes again!")
+                continue
+
             # Record the x coordinate of the first word of each line
             if word_idx == 0:
                 summary['first_word_x'] = wordbbox['x1']
 
             summary['word_heights'].append(wordbbox['y2'] - wordbbox['y1'])
-            summary['word_areas'].append((wordbbox['x2'] - wordbbox['x1']) * (wordbbox['y2'] - wordbbox['y1']))
+            summary['word_areas'].append(word_area)
 
             for x in range(wordbbox['x1'] - summary['x1'], wordbbox['x2'] - summary['x1']):
                 summary['x_gaps'][x] = 1
@@ -524,9 +529,8 @@ def summarize_document(area_stats):
         'word_height_avg': np.nanmean([area['word_height_avg'] for area in area_stats if area['words'] > 0 and area['lines'] > 1]),
         'word_height_avg_median': np.nanmedian([area['word_height_avg'] for area in area_stats if area['words'] > 0 and area['lines'] > 1]),
         'word_height_avg_std': np.nanstd([area['word_height_avg'] for area in area_stats if area['words'] > 0 and area['lines'] > 1]),
-
-        'line_height_avg': np.nanmean([a for a in area['line_heights'] for area in area_stats]),
-        'line_height_std': np.nanstd([a for a in area['line_heights'] for area in area_stats]),
+        'line_height_avg': np.nanmean([height for area in area_stats for height in area["line_heights"]]),
+        'line_height_std': np.nanstd([height for area in area_stats for height in area["line_heights"]]),
         'max_area': max([ area['area'] for area in area_stats ]),
         'max_lines': max([ area['lines'] for area in area_stats ]),
         'max_gaps': max([ len(area['gaps']) for area in area_stats ])

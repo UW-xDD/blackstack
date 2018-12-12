@@ -5,6 +5,10 @@ A machine learning approach to table and figure extraction. Uses SciKit Learn's 
 Whereas other approaches to table and figure reading depend on content to be well-structured, Blackstack ignores the issue of table and figure _data_ extraction (see [Fonduer](https://github.com/HazyResearch/fonduer)) and instead uses a format-agnostic approach to extracting entities as images that can then be used for future analysis or querying.
 
 ## Installation
+### Recommended
+We recommend using Blackstack via docker-compose (https://docs.docker.com/compose/install/)
+
+### Local
 
 Blackstack relies on a few libraries that you probably need to install, including [ghostscript](https://www.ghostscript.com) and [tesseract](https://github.com/tesseract-ocr/tesseract). If you are using MacOS and [Homebrew](https://brew.sh) you can install them as so:
 
@@ -37,6 +41,37 @@ pip install -r requirements.txt
 ````
 
 ## Getting started
+
+### Docker
+
+The recommended way of running Blackstack is via the supplied `docker-compose.yml`. It can
+be run in either `training` mode to train a new model or in `classified` mode
+to apply the trained model (or the default included one) to a set of documents. The mode of running can be provided
+as an environmental variable when invoking docker-compose:
+
+````
+BLACKSTACK_MODE=classified docker-compose up --no-deps --build --force-recreate
+````
+to apply a model.
+
+To train a new one, the first step is to move the default data so that it doesn't
+interfere with your training.
+
+````
+mv setup/02_example_data.sql setup/02_example_data.sql_bk
+BLACKSTACK_MODE=training docker-compose up --no-deps --build --force-recreate
+````
+to train one. 
+
+On startup, Blackstack will preprocess any documents in the `./input/` directory
+and either serve them up for annotation (in training mode) or apply the model
+(in classified mode).
+
+Preprocessed output will be stored to the `./docs/` directory, and, if running in
+classified mode, extractions will be stored per-document in `./docs/classified/`.
+
+### Standalone
+The tools can also be run individually if the prerequisites are installed locally.
 
 #### Preprocessing
 Before a model can be trained, documents to use as training data must be selected. If you are attempting to extract entities from a specific journal or publisher it is recommended that your training data also come from that journal or publisher. If you are trying to create a general classifier you should have a good sample of documents from across disciplines, publishers, etc.

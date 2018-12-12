@@ -9,6 +9,7 @@ import psycopg2
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
+from collections import defaultdict
 from sklearn import svm
 
 # Import database credentials
@@ -69,9 +70,14 @@ def random_area():
     area = cursor.fetchall()[0]
     q = list(area[7:])
 
-    estimated_label = clf.predict([q])[0]
-
-    p = zip(clf.classes_, clf.predict_proba([q])[0])
+    if clf is not None:
+        estimated_label = clf.predict([q])[0]
+        p = list(zip(clf.classes_, clf.predict_proba([q])[0]))
+    else:
+        estimated_label = "dummy"
+        cursor.execute("SELECT name FROM labels")
+        labels = [i[0] for i in cursor.fetchall()]
+        p = list(zip(labels, ["-"] * len(labels)))
 
     bad = False
     for each in p:
@@ -81,17 +87,17 @@ def random_area():
     if bad:
         return random_area()
 
-    new_area = {
-        'area_id': area[0],
-        'doc_id': area[1],
-        'page_no': area[2],
-        'x1': area[3],
-        'y1': area[4],
-        'x2': area[5],
-        'y2': area[6]
-    }
+    new_area = defaultdict(float)
+    new_area['area_id'] = area[0]
+    new_area['doc_id'] = area[1]
+    new_area['page_no'] = area[2]
+    new_area['x1'] = area[3]
+    new_area['y1'] = area[4]
+    new_area['x2'] = area[5]
+    new_area['y2'] = area[6]
 
     for each in p:
+        # should be label, probability
         new_area[each[0]] = each[1]
 
     new_area['img'] = get_area_image(area[1], area[2], { 'x1': area[3], 'y1': area[4], 'x2': area[5], 'y2': area[6] })
@@ -112,7 +118,7 @@ def random_area():
 
 def get_area_image(doc, page, extract):
     img_name = random_name()
-    image = np.array(Image.open('../docs/%s/png/page_%s.png' % (doc, page)), dtype=np.uint8)
+    image = np.array(Image.open('./docs/training/%s/png/page_%s.png' % (doc, page)), dtype=np.uint8)
     fig,ax = plt.subplots(1)
     ax.imshow(image)
     ax.add_patch(patches.Rectangle(
@@ -199,21 +205,25 @@ cursor.execute("""
 
 """)
 data = cursor.fetchall()
+if data == []:
+    print("Unable to initialize model! You'll still be able to train a new one, but you will not see classification probabilities as you do so.")
+    clf = None
+else:
+    # Omit area_id, doc_id, page_no, and label_name
+    train = [ list(d[4:]) for d in data ]
 
-# Omit area_id, doc_id, page_no, and label_name
-train = [ list(d[4:]) for d in data ]
+    label = np.array([ d[3] for d in data ])
+    index = [ d[0:3] for d in data ]
 
-label = np.array([ d[3] for d in data ])
-index = [ d[0:3] for d in data ]
-
-# gamma - influence of a single training example. low = far, high = close
-# C - low = less freedom, high = more freedom
-#clf = svm.SVC(gamma=0.001, C=100., probability=True, cache_size=500)
-clf = svm.SVC(gamma=1, C=100, probability=True, cache_size=500, kernel='rbf')
-
-clf.fit(train, label)
+    # gamma - influence of a single training example. low = far, high = close
+    # C - low = less freedom, high = more freedom
+    #clf = svm.SVC(gamma=0.001, C=100., probability=True, cache_size=500)
+    clf = svm.SVC(gamma=1, C=100, probability=True, cache_size=500, kernel='rbf')
+    clf.fit(train, label)
 
 # print clf.classes_
 
 if __name__ == '__main__':
+    if not os.path.exists("./tmp"):
+        os.mkdir("tmp")
     app.run(host='0.0.0.0', port=5555)

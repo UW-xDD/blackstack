@@ -6,8 +6,11 @@ services:
     environment:
       - PG_PASSWORD=blackstack
       - PG_USERNAME=postgres
+      - BLACKSTACK_MODE=${BLACKSTACK_MODE}
     ports:
       - 5555:5555
+    volumes:
+      - ./docs/:/app/pdf/docs/
 
   postgres:
     image: postgres:10.5-alpine
@@ -16,4 +19,4 @@ services:
       - POSTGRES_DB=blackstack
     volumes:
       - ./setup:/docker-entrypoint-initdb.d/
-
+      - ./postgres-data:/var/lib/postgresql/data
