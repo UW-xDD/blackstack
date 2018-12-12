@@ -13,10 +13,6 @@ fi
 filename=$(basename "$2")
 docname="${filename%.*}"
 
-mkdir -p docs/$docname
-mkdir -p docs/$docname/png
-
-mkdir -p docs/$1/$docname
 mkdir -p docs/$1/$docname/png
 mkdir -p docs/$1/$docname/tesseract
 if [ "$1" == "classified" ]
@@ -26,8 +22,6 @@ then
 fi
 
 gs -dBATCH -dNOPAUSE -sDEVICE=png16m -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -r600 -sOutputFile="./docs/$1/$docname/png/page_%d.png" $2
-
-cp $2 ./docs/$docname/orig.pdf
 
 ls ./docs/$1/$docname/png | grep -o '[0-9]\+' | parallel -j 4 "./process.sh $1 $docname {}"
 
