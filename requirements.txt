@@ -19,4 +19,4 @@ scipy==1.1.0
 six==1.11.0
 shapely==1.6.4.post2
 subprocess32==3.5.2
-Werkzeug==0.14.1
+Werkzeug==0.15.3
